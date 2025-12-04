@@ -91,6 +91,24 @@ chmod +x *.sh
 - ✅ Pre-seeding support for unattended installations
 - ✅ Comprehensive error handling
 
+## 🔧 ISO Builder Tool
+
+Want to create bootable ISOs from these installation scripts? Check out the **[ISO Builder](iso-builder/)** - a GUI and CLI tool for building custom Arch Linux ISOs.
+
+### Quick Start with ISO Builder
+```bash
+cd iso-builder
+./build-iso.sh
+```
+
+Features:
+- Interactive GUI (zenity/dialog support)
+- Command-line interface for automation
+- Build 256GB or 32GB versions (or both)
+- GitHub integration or local source support
+
+[Learn more →](iso-builder/README.md)
+
 ## 📝 License
 
 These scripts are provided as-is for educational and personal use.
