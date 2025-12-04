@@ -1,0 +1,28 @@
+# Build artifacts
+iso-builder/*.iso
+iso-builder/*.log
+
+# Temporary build directories
+/tmp/archiso-build-*
+/tmp/iso-builder-*
+
+# ISO output directories
+iso-output/
+output/
+builds/
+
+# Work directories
+work-*/
+profile-*/
+
+# System temporary files
+*.tmp
+*.cache
+
+# Backup files
+*.bak
+*~
+
+# OS generated files
+.DS_Store
+Thumbs.db
