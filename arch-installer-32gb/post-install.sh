@@ -184,7 +184,10 @@ install_end4() {
     
     # Install AGS (Aylur's GTK Shell) and other dependencies
     print_info "Installing AGS from AUR..."
-    yay -S --needed --noconfirm ags
+    if ! yay -S --needed --noconfirm ags; then
+        print_error "Failed to install AGS. end4 dotfiles require AGS to function."
+        print_warning "Continuing installation, but end4 may not work properly."
+    fi
     
     # Install additional dependencies
     sudo pacman -S --needed --noconfirm \
@@ -250,10 +253,10 @@ install_end4() {
     
     # Set executable permissions for scripts
     if [[ -d "$HOME/.config/ags" ]]; then
-        find "$HOME/.config/ags" -name "*.sh" -type f -exec chmod +x {} \; 2>/dev/null || true
+        find "$HOME/.config/ags" -name "*.sh" -type f -print0 | xargs -0 -r chmod +x 2>/dev/null || true
     fi
     if [[ -d "$HOME/.config/hypr" ]]; then
-        find "$HOME/.config/hypr" -name "*.sh" -type f -exec chmod +x {} \; 2>/dev/null || true
+        find "$HOME/.config/hypr" -name "*.sh" -type f -print0 | xargs -0 -r chmod +x 2>/dev/null || true
     fi
     
     cd "$HOME"
