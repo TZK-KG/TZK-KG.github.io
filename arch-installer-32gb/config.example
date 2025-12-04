@@ -1,0 +1,210 @@
+#!/usr/bin/env bash
+# Arch Linux 32GB USB Installation - Pre-seeding Configuration
+# Lightweight version with end4 dotfiles
+# This file allows for automated/unattended installations
+# Copy this file and configure it, then the installer can load it
+
+# ==============================================================================
+# DISK CONFIGURATION
+# ==============================================================================
+
+# Disk to install to (e.g., /dev/sdb, /dev/sdc for USB drives)
+# WARNING: All data on this disk will be destroyed!
+# Leave empty to be prompted during installation
+DISK=""
+
+# ==============================================================================
+# SYSTEM CONFIGURATION
+# ==============================================================================
+
+# System hostname (alphanumeric and hyphens only)
+HOSTNAME="arch-32gb-usb"
+
+# Username for primary user (lowercase letters, numbers, underscore, hyphen)
+USERNAME=""
+
+# Passwords should NOT be stored in this file for security reasons
+# They will be prompted during installation even in automated mode
+# USER_PASSWORD=""  # DO NOT SET - Will be prompted
+# ROOT_PASSWORD=""  # DO NOT SET - Will be prompted
+
+# ==============================================================================
+# LOCALIZATION
+# ==============================================================================
+
+# Timezone (e.g., America/New_York, Europe/London, Asia/Tokyo)
+# Use 'timedatectl list-timezones' to see available timezones
+TIMEZONE="America/New_York"
+
+# Locale (e.g., en_US.UTF-8, en_GB.UTF-8, de_DE.UTF-8)
+LOCALE="en_US.UTF-8"
+
+# Keyboard layout (e.g., us, uk, de, fr)
+KEYMAP="us"
+
+# ==============================================================================
+# INSTALLATION OPTIONS
+# ==============================================================================
+
+# Installation mode: lightweight (optimized for 32GB)
+# lightweight: Minimal system with Hyprland and end4 dotfiles
+INSTALL_MODE="lightweight"
+
+# Enable firewall (yes/no)
+# Installs and configures UFW firewall
+ENABLE_FIREWALL="yes"
+
+# Install end4 dotfiles (yes/no)
+# end4 provides a modern, lightweight Hyprland desktop configuration
+# Source: https://github.com/end-4/dots-hyprland
+INSTALL_END4="yes"
+
+# Automation mode (automatic/interactive)
+# automatic: No confirmations during installation
+# interactive: Confirm before destructive operations
+AUTOMATION_MODE="interactive"
+
+# ==============================================================================
+# PARTITIONING CONFIGURATION FOR 32GB USB
+# ==============================================================================
+
+# Partition sizes optimized for 32GB USB drive
+# Total usable space: ~32GB
+# Layout:
+#   EFI:   512MB  (bootloader)
+#   ROOT:  15GB   (system files)
+#   HOME:  10GB   (user files)
+#   SWAP:  4GB    (swap space)
+#   DATA:  ~2GB   (remaining space)
+
+# EFI partition size (default: 512MiB)
+EFI_SIZE="512MiB"
+
+# Root partition size (default: 15GiB) - reduced from 60GB/100GB
+ROOT_SIZE="15GiB"
+
+# Home partition size (default: 10GiB) - reduced from 80GB/200GB
+HOME_SIZE="10GiB"
+
+# Swap partition size (default: 4GiB) - reduced from 8GB
+# For 32GB USB, 4GB swap is sufficient for systems with 8GB+ RAM
+SWAP_SIZE="4GiB"
+
+# DATA partition gets remaining space (~2GB)
+
+# ==============================================================================
+# LIGHTWEIGHT OPTIMIZATIONS
+# ==============================================================================
+
+# The following optimizations are applied for 32GB version:
+#
+# 1. Reduced partition sizes to fit 32GB USB
+# 2. Minimal package selection (no Docker, VS Code, heavy tools)
+# 3. Single browser (Firefox only, no Chromium/Brave)
+# 4. end4 dotfiles instead of HyDE (lighter and more efficient)
+# 5. No AUR packages by default
+# 6. Removed heavy development tools
+# 7. Basic Python only (no Node.js unless needed)
+# 8. Essential system utilities only
+# 9. Optimized mount options for USB longevity
+# 10. Compressed initramfs for faster boot
+
+# ==============================================================================
+# USB-SPECIFIC OPTIMIZATIONS
+# ==============================================================================
+
+# Automatically applied optimizations:
+# - noatime mount option (reduces writes)
+# - Periodic TRIM if supported
+# - Optimized I/O scheduler
+# - Reduced logging (journal in RAM)
+# - Minimal swap usage (swappiness=10)
+# - zram recommended for swap
+
+# ==============================================================================
+# EXAMPLE CONFIGURATIONS
+# ==============================================================================
+
+# Example 1: Personal portable system
+# DISK="/dev/sdb"
+# HOSTNAME="portable-arch"
+# USERNAME="user"
+# TIMEZONE="America/New_York"
+# INSTALL_MODE="lightweight"
+# INSTALL_END4="yes"
+# ENABLE_FIREWALL="yes"
+
+# Example 2: Minimal development system
+# DISK="/dev/sdc"
+# HOSTNAME="dev-portable"
+# USERNAME="developer"
+# TIMEZONE="UTC"
+# INSTALL_MODE="lightweight"
+# INSTALL_END4="yes"
+# ENABLE_FIREWALL="yes"
+
+# ==============================================================================
+# USAGE INSTRUCTIONS
+# ==============================================================================
+
+# 1. Copy this file: cp config.example my-config.conf
+# 2. Edit my-config.conf with your settings
+# 3. Run the installer: ./arch-install.sh
+# 4. When prompted, load your configuration file
+#
+# For fully automated installation:
+#   - Configure all settings in this file
+#   - Set AUTOMATION_MODE="automatic"
+#   - Run: ./arch-install.sh
+#
+# Note: Passwords will always be prompted for security reasons
+
+# ==============================================================================
+# DISK SIZE REQUIREMENTS
+# ==============================================================================
+
+# Minimum disk size: 32GB
+# Recommended disk size: 32GB USB 3.0 or higher
+# The script will fail if disk is smaller than 30GB
+
+# Comparison with full version:
+# - Full (256GB): EFI(512MB) + Root(60-100GB) + Home(80-200GB) + Swap(8GB) + Data(~105GB)
+# - Light (32GB): EFI(512MB) + Root(15GB) + Home(10GB) + Swap(4GB) + Data(~2GB)
+
+# ==============================================================================
+# end4 DOTFILES INFORMATION
+# ==============================================================================
+
+# end4 dotfiles provide:
+# - Modern, clean Hyprland configuration
+# - Lightweight and efficient
+# - AGS (Aylur's GTK Shell) for widgets
+# - Beautiful animations and effects
+# - Easy customization
+# - Active development and community support
+#
+# Repository: https://github.com/end-4/dots-hyprland
+# Requirements: Hyprland, waybar, AGS, essential Wayland tools
+# Installed automatically during post-installation
+
+# ==============================================================================
+# POST-INSTALLATION RECOMMENDATIONS
+# ==============================================================================
+
+# After installation, consider:
+#
+# 1. Setup zram for swap (reduces USB writes)
+#    sudo pacman -S zram-generator
+#    Configure in /etc/systemd/zram-generator.conf
+#
+# 2. Move logs to RAM (optional)
+#    Edit /etc/systemd/journald.conf: Storage=volatile
+#
+# 3. Minimize browser cache writes
+#    Firefox: about:config -> browser.cache.disk.enable = false
+#
+# 4. Install only essential AUR packages
+#    Keep installed packages minimal
+#
+# 5. Regular backups
+#    USB drives have limited write cycles
