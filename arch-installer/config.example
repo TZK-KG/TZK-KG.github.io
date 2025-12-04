@@ -1,3 +1,137 @@
+#!/usr/bin/env bash
+# Arch Linux Installation - Pre-seeding Configuration
+# This file allows for automated/unattended installations
+# Copy this file and configure it, then the installer can load it
+
+# ==============================================================================
+# DISK CONFIGURATION
+# ==============================================================================
+
+# Disk to install to (e.g., /dev/sda, /dev/nvme0n1)
+# WARNING: All data on this disk will be destroyed!
+# Leave empty to be prompted during installation
+DISK=""
+
+# ==============================================================================
+# SYSTEM CONFIGURATION
+# ==============================================================================
+
+# System hostname (alphanumeric and hyphens only)
+HOSTNAME=""
+
+# Username for primary user (lowercase letters, numbers, underscore, hyphen)
+USERNAME=""
+
+# Passwords should NOT be stored in this file for security reasons
+# They will be prompted during installation even in automated mode
+# USER_PASSWORD=""  # DO NOT SET - Will be prompted
+# ROOT_PASSWORD=""  # DO NOT SET - Will be prompted
+
+# ==============================================================================
+# LOCALIZATION
+# ==============================================================================
+
+# Timezone (e.g., America/New_York, Europe/London, Asia/Tokyo)
+# Use 'timedatectl list-timezones' to see available timezones
+TIMEZONE="America/New_York"
+
+# Locale (e.g., en_US.UTF-8, en_GB.UTF-8, de_DE.UTF-8)
+LOCALE="en_US.UTF-8"
+
+# Keyboard layout (e.g., us, uk, de, fr)
+KEYMAP="us"
+
+# ==============================================================================
+# INSTALLATION OPTIONS
+# ==============================================================================
+
+# Installation mode: full, minimal, custom
+# full: Install everything (Hyprland, HyDE, all applications)
+# minimal: Base system only
+# custom: Choose components during installation
+INSTALL_MODE="full"
+
+# Enable firewall (yes/no)
+# Installs and configures UFW firewall
+ENABLE_FIREWALL="yes"
+
+# Install HyDE dotfiles (yes/no)
+# HyDE provides a beautiful pre-configured Hyprland desktop
+# Source: https://github.com/prasanthrangan/hyprdots
+INSTALL_HYDE="yes"
+
+# Automation mode (automatic/interactive)
+# automatic: No confirmations during installation
+# interactive: Confirm before destructive operations
+AUTOMATION_MODE="interactive"
+
+# ==============================================================================
+# PARTITIONING CONFIGURATION (Advanced)
+# ==============================================================================
+
+# Partition sizes (default values shown)
+# Adjust these if you need different partition layouts
+# Note: DATA partition will use all remaining space
+
+# EFI partition size (default: 512MiB)
+# EFI_SIZE="512MiB"
+
+# Root partition size (default: 100GiB)
+# ROOT_SIZE="100GiB"
+
+# Home partition size (default: 200GiB)
+# HOME_SIZE="200GiB"
+
+# Swap partition size (default: 8GiB)
+# Recommended: Same as RAM for hibernation, or 2-4GB otherwise
+# SWAP_SIZE="8GiB"
+
+# ==============================================================================
+# EXAMPLE CONFIGURATIONS
+# ==============================================================================
+
+# Example 1: Desktop workstation
+# DISK="/dev/sda"
+# HOSTNAME="archlinux-desktop"
+# USERNAME="john"
+# TIMEZONE="America/New_York"
+# INSTALL_MODE="full"
+# INSTALL_HYDE="yes"
+# ENABLE_FIREWALL="yes"
+
+# Example 2: Development server (minimal install)
+# DISK="/dev/sda"
+# HOSTNAME="dev-server"
+# USERNAME="developer"
+# TIMEZONE="UTC"
+# INSTALL_MODE="minimal"
+# INSTALL_HYDE="no"
+# ENABLE_FIREWALL="yes"
+
+# Example 3: Personal laptop
+# DISK="/dev/nvme0n1"
+# HOSTNAME="my-laptop"
+# USERNAME="myuser"
+# TIMEZONE="Europe/London"
+# INSTALL_MODE="full"
+# INSTALL_HYDE="yes"
+# ENABLE_FIREWALL="yes"
+
+# ==============================================================================
+# USAGE INSTRUCTIONS
+# ==============================================================================
+
+# 1. Copy this file: cp config.example my-config.conf
+# 2. Edit my-config.conf with your settings
+# 3. Run the installer: ./arch-install.sh
+# 4. When prompted, load your configuration file
+#
+# For fully automated installation:
+#   - Configure all settings in this file
+#   - Set AUTOMATION_MODE="automatic"
+#   - Run: ./arch-install.sh
+#
+# Note: Passwords will always be prompted for security reasons
 # Arch Linux USB Installation Configuration
 # 
 # This configuration file is optimized for 256GB USB drive installation
