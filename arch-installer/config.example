@@ -1,0 +1,143 @@
+# Arch Linux USB Installation Configuration
+# 
+# This configuration file is optimized for 256GB USB drive installation
+# Copy this file to config.conf and customize as needed:
+#   cp config.example config.conf
+#   vim config.conf
+
+# ============================================
+# Disk Configuration
+# ============================================
+
+# Target disk for installation (e.g., /dev/sdb, /dev/sdc)
+# WARNING: All data on this disk will be ERASED!
+# Leave empty to be prompted during installation
+DISK=""
+
+# Minimum disk size validation: 200GB
+# Recommended disk size: 256GB
+# The script will warn if disk is smaller than 256GB
+
+# ============================================
+# Partition Sizes (256GB USB Drive)
+# ============================================
+# These are set in the script and optimized for 256GB USB:
+#
+# EFI_SIZE="512MiB"      # EFI System Partition
+# ROOT_SIZE="60GiB"      # Root filesystem (/)
+# HOME_SIZE="80GiB"      # Home directory (/home)
+# SWAP_SIZE="8GiB"       # Swap space
+# DATA_SIZE="100%"       # Remaining space (~105GB) for /data
+#
+# Do not modify these values unless you know what you're doing
+
+# ============================================
+# System Configuration
+# ============================================
+
+# Hostname for the system
+# Default: archlinux-usb
+HOSTNAME="archlinux-usb"
+
+# Primary user account name
+# Leave empty to be prompted during installation
+USERNAME=""
+
+# ============================================
+# Localization
+# ============================================
+
+# Timezone (see /usr/share/zoneinfo for options)
+# Examples:
+#   America/New_York
+#   Europe/London
+#   Asia/Tokyo
+#   UTC
+TIMEZONE="UTC"
+
+# System locale
+# Common options:
+#   en_US.UTF-8
+#   en_GB.UTF-8
+#   de_DE.UTF-8
+#   fr_FR.UTF-8
+LOCALE="en_US.UTF-8"
+
+# Console keymap
+# Common options: us, uk, de, fr, es
+# See /usr/share/kbd/keymaps for full list
+KEYMAP="us"
+
+# ============================================
+# USB-Specific Optimizations
+# ============================================
+# The following optimizations are automatically applied:
+#
+# 1. Mount Options:
+#    - noatime: Reduces writes by not updating access times
+#
+# 2. Kernel Parameters:
+#    - elevator=noop: Optimized I/O scheduler for USB/SSD
+#
+# 3. Filesystem:
+#    - ext4 with defaults (reliable for USB)
+#    - Alternative: Consider f2fs for better flash performance
+#
+# 4. Swap:
+#    - 8GB swap partition
+#    - Optional: Use zram instead (configure post-install)
+#
+# 5. Bootloader:
+#    - GRUB with --removable flag for maximum compatibility
+
+# ============================================
+# Package Installation
+# ============================================
+# Additional packages are installed from packages.conf
+# Edit packages.conf to customize package selection
+
+# ============================================
+# Post-Installation Notes
+# ============================================
+# After installation, consider:
+#
+# 1. Setup zram for swap (reduces USB writes)
+#    sudo pacman -S zram-generator
+#
+# 2. Configure periodic TRIM (if USB supports it)
+#    sudo systemctl enable fstrim.timer
+#
+# 3. Move browser cache to RAM
+#    # Add to /etc/fstab:
+#    # tmpfs /home/USER/.cache tmpfs nodev,nosuid,size=2G 0 0
+#
+# 4. Minimize logging writes
+#    # Edit /etc/systemd/journald.conf:
+#    # Storage=volatile
+#
+# 5. Install and configure TLP for power management
+#    sudo pacman -S tlp
+#    sudo systemctl enable tlp
+
+# ============================================
+# USB Drive Recommendations
+# ============================================
+# For best results:
+# - Use USB 3.0 or 3.1 drive
+# - Choose reputable manufacturer
+# - Consider industrial/high-endurance USB drives
+# - Minimum 200GB, recommended 256GB
+# - Ensure good cooling (USB drives can get hot)
+
+# ============================================
+# Compatibility Notes
+# ============================================
+# This installation is optimized for:
+# - Dell OptiPlex 3040 MT
+# - Any UEFI-compatible system
+# - USB 3.0/3.1 ports (backward compatible with USB 2.0)
+#
+# Requirements:
+# - UEFI boot mode (not Legacy/BIOS)
+# - Secure Boot may need to be disabled
+# - Minimum 4GB RAM recommended
