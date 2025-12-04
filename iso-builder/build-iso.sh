@@ -12,7 +12,6 @@ readonly RED='\033[0;31m'
 readonly GREEN='\033[0;32m'
 readonly YELLOW='\033[1;33m'
 readonly BLUE='\033[0;34m'
-readonly CYAN='\033[0;36m'
 readonly NC='\033[0m' # No Color
 
 # ==============================================================================
@@ -282,7 +281,14 @@ check_disk_space() {
     local required_space=4000000  # 4GB in KB
     local available_space
     
-    available_space=$(df /tmp | awk 'NR==2 {print $4}')
+    # More robust way to get available space - skip header and get the last field
+    available_space=$(df /tmp | tail -n 1 | awk '{print $4}')
+    
+    # Validate we got a number
+    if ! [[ "$available_space" =~ ^[0-9]+$ ]]; then
+        warning "Could not determine available disk space, skipping check"
+        return 0
+    fi
     
     if [[ $available_space -lt $required_space ]]; then
         local msg="Insufficient disk space in /tmp\nRequired: 4GB\nAvailable: $((available_space / 1024 / 1024))GB"
@@ -488,9 +494,12 @@ setup_archiso_profile() {
         chmod +x "$profile_dir/airootfs/root/customize.sh"
     fi
     
-    # Create auto-start script in profile
+    # Create helper script to display installation instructions on ISO boot
+    # This script is sourced by .bashrc when users log into the live ISO
     cat > "$profile_dir/airootfs/root/.automated_script.sh" << 'EOF'
 #!/bin/bash
+# Helper script displayed when booting the custom Arch ISO
+# This provides quick access instructions for the installation scripts
 if [ -f /root/arch-installer/arch-install.sh ]; then
     cd /root/arch-installer
     echo "Installation scripts are available in /root/arch-installer/"
@@ -529,8 +538,13 @@ build_iso() {
         return 1
     fi
     
-    # Find the generated ISO and rename it
-    local generated_iso=$(find "$OUTPUT_DIR" -name "archlinux-*.iso" -type f -printf '%T+ %p\n' | sort -r | head -n1 | cut -d' ' -f2-)
+    # Find the generated ISO and rename it - using portable method
+    local generated_iso=$(find "$OUTPUT_DIR" -name "archlinux-*.iso" -type f -newer "$profile_dir" 2>/dev/null | head -n1)
+    
+    # Fallback: if no ISO found with -newer, try ls -t (most recently modified)
+    if [[ -z "$generated_iso" ]]; then
+        generated_iso=$(ls -t "$OUTPUT_DIR"/archlinux-*.iso 2>/dev/null | head -n1)
+    fi
     
     if [[ -n "$generated_iso" && -f "$generated_iso" ]]; then
         local new_name="$OUTPUT_DIR/${output_name}.iso"
