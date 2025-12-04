@@ -147,7 +147,7 @@ configure_mkinitcpio() {
     # Backup original config
     cp /etc/mkinitcpio.conf /etc/mkinitcpio.conf.backup
     
-    # Add modules for Dell OptiPlex 3040 (Intel i7-6700)
+    # Add Intel graphics module for better hardware compatibility
     sed -i 's/^MODULES=()/MODULES=(i915)/' /etc/mkinitcpio.conf
     
     # Regenerate initramfs

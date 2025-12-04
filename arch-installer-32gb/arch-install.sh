@@ -268,7 +268,7 @@ get_passwords() {
 get_timezone() {
     print_info "Auto-detecting timezone..."
     local detected_tz
-    detected_tz=$(curl -s http://ip-api.com/line?fields=timezone 2>/dev/null || echo "America/New_York")
+    detected_tz=$(curl -s https://ip-api.com/line?fields=timezone 2>/dev/null || echo "America/New_York")
     
     read -rp "Enter timezone [default: $detected_tz]: " input_tz
     TIMEZONE="${input_tz:-$detected_tz}"

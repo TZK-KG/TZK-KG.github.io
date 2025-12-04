@@ -250,10 +250,10 @@ install_end4() {
     
     # Set executable permissions for scripts
     if [[ -d "$HOME/.config/ags" ]]; then
-        chmod +x "$HOME/.config/ags"/*.sh 2>/dev/null || true
+        find "$HOME/.config/ags" -name "*.sh" -type f -exec chmod +x {} \; 2>/dev/null || true
     fi
     if [[ -d "$HOME/.config/hypr" ]]; then
-        chmod +x "$HOME/.config/hypr"/*.sh 2>/dev/null || true
+        find "$HOME/.config/hypr" -name "*.sh" -type f -exec chmod +x {} \; 2>/dev/null || true
     fi
     
     cd "$HOME"
