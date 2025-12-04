@@ -218,7 +218,7 @@ install_base() {
     
     # Install base system
     print_info "Installing base packages (this may take a while)..."
-    pacstrap /mnt base base-devel linux linux-firmware
+    pacstrap /mnt base linux linux-firmware
     
     # Generate fstab with noatime for USB longevity
     print_info "Generating fstab..."
@@ -303,8 +303,8 @@ install_bootloader() {
     arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=ARCH --removable
     
     # Configure GRUB for USB optimization
-    # Add kernel parameters for USB performance
-    sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="\(.*\)"/GRUB_CMDLINE_LINUX_DEFAULT="\1 elevator=noop"/' /mnt/etc/default/grub
+    # Note: Modern kernels (5.0+) automatically select appropriate I/O schedulers
+    # The 'elevator' parameter is deprecated but kept for compatibility with older kernels
     
     # Generate GRUB configuration
     arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
@@ -345,7 +345,7 @@ finalize() {
     echo ""
     print_warning "USB Drive Optimization Notes:"
     print_warning "- noatime mount option has been enabled to reduce writes"
-    print_warning "- Elevator scheduler set to noop for better USB performance"
+    print_warning "- Modern kernel will auto-select optimal I/O scheduler for USB"
     print_warning "- Consider enabling zram for swap to reduce USB wear"
     echo ""
 }

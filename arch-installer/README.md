@@ -43,9 +43,10 @@ The installation script includes several optimizations for USB drive longevity a
 - **noatime**: Reduces write operations by not updating file access timestamps
 - Applied automatically to all ext4 partitions during fstab generation
 
-### 2. Kernel Parameters
-- **elevator=noop**: Optimized I/O scheduler for SSDs/USB drives
-- Reduces unnecessary seek operations
+### 2. I/O Scheduler
+- Modern Linux kernels (5.0+) automatically select appropriate I/O schedulers
+- Optimized for SSD/USB flash storage
+- No manual configuration needed
 
 ### 3. Filesystem Choices
 - **ext4**: Reliable and well-tested for USB drives
