@@ -132,8 +132,15 @@ configure_makepkg() {
     print_info "Configuring makepkg for parallel compilation..."
     
     # Backup original config
-    sudo cp /etc/makepkg.conf /etc/makepkg.conf.backup
-    
+    if [[ -f /etc/makepkg.conf.backup ]]; then
+        local timestamp
+        timestamp=$(date +%Y%m%d%H%M%S)
+        sudo cp /etc/makepkg.conf "/etc/makepkg.conf.backup.${timestamp}"
+        print_warning "Existing /etc/makepkg.conf.backup found. Created backup as /etc/makepkg.conf.backup.${timestamp}"
+    else
+        sudo cp /etc/makepkg.conf /etc/makepkg.conf.backup
+        print_success "Backup created: /etc/makepkg.conf.backup"
+    fi
     # Set parallel compilation
     local nproc_count
     nproc_count=$(nproc)
