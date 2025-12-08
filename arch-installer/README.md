@@ -142,6 +142,18 @@ If installation fails, the checkpoint system allows resuming:
 
 ... (same as before) ...
 
+### VPN & Remote Access
+- **Tailscale** - Secure mesh VPN for remote access
+  - Zero-config VPN based on WireGuard
+  - Provides secure remote SSH access to your system
+  - Works across NAT and firewalls
+  - Easy authentication: `sudo tailscale up`
+  - Free for personal use (up to 20 devices)
+  - [Tailscale Documentation](https://tailscale.com/kb/)
+- **ProtonVPN** - Privacy-focused VPN service
+  - CLI interface for ProtonVPN
+  - Configure with `protonvpn-cli login`
+
 ### Dotfiles
 - end4 dotfiles (optional, configurable)
   - The installer will clone the repository specified by DOTFILES_REPO and run the command specified in DOTFILES_INSTALL_CMD as the created user. Set INSTALL_DOTFILES="no" to skip.
@@ -169,10 +181,11 @@ Executed inside arch-chroot:
 
 ### post-install.sh
 Run after first boot:
-- AUR helpers installation
+- AUR helpers installation (yay and paru)
 - Hyprland desktop setup
 - end4 dotfiles installation (optional)
 - Application installation
+- VPN setup (Tailscale and ProtonVPN)
 - Docker configuration
 - Firewall setup
 - System optimization
@@ -272,6 +285,78 @@ If anything fails, consult the log files:
 - /tmp/arch-install.log
 - /tmp/arch-post-install.log
 - /tmp/install-state.conf
+
+## 🌐 Using Tailscale VPN
+
+Tailscale provides secure remote access to your Arch system from anywhere.
+
+### Initial Setup
+
+After installation, authenticate with Tailscale:
+
+```bash
+sudo tailscale up
+```
+
+This will:
+1. Generate a unique authentication URL
+2. Open your browser to sign in
+3. Connect your device to your Tailscale network
+
+### Common Use Cases
+
+**Remote SSH Access:**
+```bash
+# From another Tailscale-connected device
+ssh username@100.x.y.z  # Use Tailscale IP
+```
+
+**Remote Development:**
+- Access VS Code Server remotely
+- SSH into your development environment
+- Work on your projects from anywhere
+
+**Docker Access:**
+```bash
+# Expose Docker services via Tailscale
+# Access containers from other devices
+```
+
+### Tailscale Commands
+
+```bash
+# Check status
+sudo tailscale status
+
+# Disconnect
+sudo tailscale down
+
+# Reconnect
+sudo tailscale up
+
+# Get your Tailscale IP
+tailscale ip
+
+# Share a file
+tailscale file cp myfile.txt devicename:
+```
+
+### Security & Benefits
+
+- ✓ End-to-end encrypted (WireGuard)
+- ✓ Works behind NAT/firewalls
+- ✓ No port forwarding needed
+- ✓ Zero trust network access
+- ✓ Easy device management via web dashboard
+- ✓ Works alongside ProtonVPN (different use cases)
+
+### Tailscale + ProtonVPN
+
+Both VPNs can coexist:
+- **ProtonVPN**: Privacy VPN for general internet traffic
+- **Tailscale**: Secure mesh network for accessing your devices
+
+They serve different purposes and work well together.
 
 ## 🔍 Troubleshooting
 

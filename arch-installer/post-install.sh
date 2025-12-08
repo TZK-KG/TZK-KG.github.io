@@ -124,9 +124,278 @@ install_dotfiles() {
 }
 
 # =====================================================================
-# MAKEPKG, AUR, Hyprland, Browsers, Docker, etc. (unchanged)
+# MAKEPKG CONFIGURATION
 # =====================================================================
-# (retain existing helper functions: configure_makepkg, install_aur_helpers, install_hyprland, ...)
+configure_makepkg() {
+    print_header "MAKEPKG CONFIGURATION"
+    
+    print_info "Configuring makepkg for parallel compilation..."
+    
+    # Backup original config
+    sudo cp /etc/makepkg.conf /etc/makepkg.conf.backup
+    
+    # Set parallel compilation
+    local nproc_count
+    nproc_count=$(nproc)
+    sudo sed -i "s/^#MAKEFLAGS=.*/MAKEFLAGS=\"-j${nproc_count}\"/" /etc/makepkg.conf
+    
+    print_success "Makepkg configured for ${nproc_count} cores"
+}
+
+# =====================================================================
+# AUR HELPERS INSTALLATION (yay and paru)
+# =====================================================================
+install_aur_helpers() {
+    print_header "AUR HELPERS INSTALLATION"
+    
+    print_info "Installing yay and paru AUR helpers..."
+    
+    # Install dependencies
+    print_info "Installing build dependencies..."
+    sudo pacman -S --needed --noconfirm base-devel git
+    
+    local build_dir="/tmp/aur-helpers-build"
+    rm -rf "$build_dir"
+    mkdir -p "$build_dir"
+    
+    # Install yay
+    if command -v yay &> /dev/null; then
+        print_warning "yay is already installed"
+    else
+        print_info "Building yay..."
+        cd "$build_dir"
+        git clone https://aur.archlinux.org/yay.git
+        cd yay
+        makepkg -si --noconfirm
+        print_success "yay installed"
+    fi
+    
+    # Install paru
+    if command -v paru &> /dev/null; then
+        print_warning "paru is already installed"
+    else
+        print_info "Building paru..."
+        cd "$build_dir"
+        git clone https://aur.archlinux.org/paru.git
+        cd paru
+        makepkg -si --noconfirm
+        print_success "paru installed"
+    fi
+    
+    cd "$HOME"
+    rm -rf "$build_dir"
+    
+    print_success "AUR helpers installed (yay and paru)"
+}
+
+# =====================================================================
+# HYPRLAND DESKTOP ENVIRONMENT
+# =====================================================================
+install_hyprland() {
+    print_header "HYPRLAND DESKTOP ENVIRONMENT"
+    
+    print_info "Installing Hyprland and components..."
+    sudo pacman -S --needed --noconfirm $HYPRLAND_PACKAGES
+    
+    print_info "Installing Hyprland extras..."
+    sudo pacman -S --needed --noconfirm $HYPRLAND_EXTRAS
+    
+    print_info "Installing theming packages..."
+    sudo pacman -S --needed --noconfirm $THEMING_PACKAGES
+    
+    print_success "Hyprland installed"
+}
+
+# =====================================================================
+# DISPLAY MANAGER
+# =====================================================================
+install_display_manager() {
+    print_header "DISPLAY MANAGER"
+    
+    print_info "Installing SDDM..."
+    sudo pacman -S --needed --noconfirm $DISPLAY_PACKAGES
+    
+    print_info "Enabling SDDM..."
+    sudo systemctl enable sddm
+    
+    print_success "SDDM installed and enabled"
+}
+
+# =====================================================================
+# BROWSER INSTALLATION
+# =====================================================================
+install_browsers() {
+    print_header "BROWSER INSTALLATION"
+    
+    print_info "Installing official browsers..."
+    sudo pacman -S --needed --noconfirm $BROWSER_PACKAGES
+    
+    print_info "Installing Brave from AUR..."
+    yay -S --needed --noconfirm brave-bin || true
+    
+    print_success "Browsers installed"
+}
+
+# =====================================================================
+# PROTONVPN INSTALLATION
+# =====================================================================
+install_protonvpn() {
+    print_header "PROTONVPN INSTALLATION"
+    
+    print_info "Installing ProtonVPN CLI..."
+    yay -S --needed --noconfirm protonvpn-cli || true
+    
+    print_success "ProtonVPN CLI installed"
+    print_info "Configure with 'protonvpn-cli login' after reboot"
+}
+
+# =====================================================================
+# TAILSCALE VPN INSTALLATION
+# =====================================================================
+install_tailscale() {
+    print_header "TAILSCALE VPN INSTALLATION"
+    
+    print_info "Installing Tailscale..."
+    sudo pacman -S --needed --noconfirm $VPN_PACKAGES
+    
+    print_info "Enabling Tailscale service..."
+    sudo systemctl enable tailscaled
+    sudo systemctl start tailscaled
+    
+    print_success "Tailscale installed and enabled"
+    print_info "Run 'sudo tailscale up' after reboot to authenticate"
+}
+
+# =====================================================================
+# DOCKER INSTALLATION
+# =====================================================================
+install_docker() {
+    print_header "DOCKER INSTALLATION"
+    
+    print_info "Installing Docker..."
+    sudo pacman -S --needed --noconfirm $DOCKER_PACKAGES
+    
+    print_info "Enabling Docker service..."
+    sudo systemctl enable docker
+    sudo systemctl start docker
+    
+    print_info "Adding user to docker group..."
+    sudo usermod -aG docker "$USER"
+    
+    print_success "Docker installed and configured"
+    print_warning "Logout and login again to use docker without sudo"
+}
+
+# =====================================================================
+# DEVELOPMENT TOOLS
+# =====================================================================
+install_development_tools() {
+    print_header "DEVELOPMENT TOOLS"
+    
+    print_info "Installing development packages..."
+    sudo pacman -S --needed --noconfirm $DEV_PACKAGES
+    
+    print_info "Installing VS Code and Postman from AUR..."
+    yay -S --needed --noconfirm visual-studio-code-bin postman-bin || true
+    
+    print_success "Development tools installed"
+}
+
+# =====================================================================
+# SYSTEM UTILITIES
+# =====================================================================
+install_utilities() {
+    print_header "SYSTEM UTILITIES"
+    
+    print_info "Installing system monitoring and utility tools..."
+    sudo pacman -S --needed --noconfirm $UTIL_PACKAGES
+    
+    print_info "Installing hardware utilities..."
+    sudo pacman -S --needed --noconfirm $HARDWARE_PACKAGES
+    
+    print_info "Installing disk utilities..."
+    sudo pacman -S --needed --noconfirm $DISK_PACKAGES
+    
+    print_info "Installing compression tools..."
+    sudo pacman -S --needed --noconfirm $COMPRESSION_PACKAGES
+    
+    print_success "System utilities installed"
+}
+
+# =====================================================================
+# FIREWALL CONFIGURATION
+# =====================================================================
+configure_firewall() {
+    if [[ "${ENABLE_FIREWALL:-no}" != "yes" ]]; then
+        print_info "Skipping firewall configuration (not enabled)"
+        return
+    fi
+    
+    print_header "FIREWALL CONFIGURATION"
+    
+    print_info "Installing UFW..."
+    sudo pacman -S --needed --noconfirm ufw
+    
+    print_info "Configuring UFW..."
+    sudo ufw default deny incoming
+    sudo ufw default allow outgoing
+    sudo ufw allow ssh
+    
+    print_info "Enabling UFW..."
+    sudo systemctl enable ufw
+    sudo systemctl start ufw
+    sudo ufw enable
+    
+    print_success "Firewall configured and enabled"
+}
+
+# =====================================================================
+# SSH CONFIGURATION
+# =====================================================================
+configure_ssh() {
+    print_header "SSH CONFIGURATION"
+    
+    if [[ ! -f /etc/ssh/sshd_config ]]; then
+        print_info "Installing OpenSSH..."
+        sudo pacman -S --needed --noconfirm openssh
+    fi
+    
+    print_info "Configuring SSH security..."
+    
+    # Backup original config
+    sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.backup
+    
+    # Disable root login
+    sudo sed -i 's/^#PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
+    sudo sed -i 's/^PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
+    
+    # Enable key-based authentication
+    sudo sed -i 's/^#PubkeyAuthentication.*/PubkeyAuthentication yes/' /etc/ssh/sshd_config
+    
+    print_success "SSH configured (root login disabled)"
+}
+
+# =====================================================================
+# SYSTEM OPTIMIZATION
+# =====================================================================
+configure_sysctl() {
+    print_header "SYSTEM OPTIMIZATION"
+    
+    print_info "Configuring sysctl tweaks..."
+    
+    sudo tee /etc/sysctl.d/99-custom.conf > /dev/null <<EOF
+# System optimization tweaks
+# Reduce swap usage
+vm.swappiness=10
+vm.vfs_cache_pressure=50
+# Increase inotify watches for development
+fs.inotify.max_user_watches=524288
+EOF
+    
+    sudo sysctl --system
+    
+    print_success "System optimization applied"
+}
 
 # =====================================================================
 # FINAL CONFIGURATION
@@ -159,6 +428,7 @@ print_summary() {
     echo "  ✓ Display Manager: SDDM"
     echo "  ✓ Browsers: Firefox, Chromium, Brave"
     echo "  ✓ VPN: ProtonVPN CLI"
+    echo "  ✓ VPN: Tailscale (mesh VPN for remote access)"
     echo "  ✓ Docker: docker, docker-compose"
     echo "  ✓ Development: VS Code, Node.js, Python, Postman"
     echo "  ✓ Utilities: btop, htop, glances, fastfetch"
@@ -171,6 +441,7 @@ print_summary() {
     echo "3. Login and select Hyprland as your session"
     echo "4. Docker: logout/login to use without sudo"
     echo "5. ProtonVPN: Configure with 'protonvpn-cli login'"
+    echo "6. Tailscale: Connect with 'sudo tailscale up'"
     echo
 }
 
@@ -201,6 +472,7 @@ main() {
     install_dotfiles || true
     install_browsers || true
     install_protonvpn || true
+    install_tailscale || true
     install_docker || true
     install_development_tools || true
     install_utilities || true

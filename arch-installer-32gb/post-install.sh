@@ -305,6 +305,24 @@ install_development_tools() {
 }
 
 # ==============================================================================
+# TAILSCALE VPN INSTALLATION
+# ==============================================================================
+
+install_tailscale() {
+    print_header "TAILSCALE VPN INSTALLATION"
+    
+    print_info "Installing Tailscale..."
+    sudo pacman -S --needed --noconfirm $VPN_PACKAGES
+    
+    print_info "Enabling Tailscale service..."
+    sudo systemctl enable tailscaled
+    sudo systemctl start tailscaled
+    
+    print_success "Tailscale installed and enabled"
+    print_info "Run 'sudo tailscale up' after reboot to authenticate"
+}
+
+# ==============================================================================
 # FIREWALL CONFIGURATION
 # ==============================================================================
 
@@ -455,6 +473,7 @@ print_summary() {
     [[ "$INSTALL_END4" == "yes" ]] && echo "  ✓ end4 Dotfiles: Installed"
     echo "  ✓ Display Manager: SDDM"
     echo "  ✓ Browser: Firefox (single browser)"
+    echo "  ✓ VPN: Tailscale (mesh VPN for remote access)"
     echo "  ✓ Development: Python only"
     echo "  ✓ Utilities: htop, fastfetch (minimal)"
     [[ "$ENABLE_FIREWALL" == "yes" ]] && echo "  ✓ Firewall: UFW (enabled)"
@@ -485,7 +504,8 @@ print_summary() {
     echo "1. Reboot the system: sudo reboot"
     echo "2. SDDM will start automatically"
     echo "3. Login and select Hyprland as your session"
-    echo "4. Enjoy your lightweight Arch Linux with end4!"
+    echo "4. Tailscale: Connect with 'sudo tailscale up'"
+    echo "5. Enjoy your lightweight Arch Linux with end4!"
     echo
     
     print_info "end4 Dotfiles Info:"
@@ -526,6 +546,7 @@ main() {
     install_end4
     install_browsers
     install_development_tools
+    install_tailscale
     install_utilities
     configure_firewall
     configure_ssh
