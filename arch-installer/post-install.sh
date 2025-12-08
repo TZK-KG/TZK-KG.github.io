@@ -109,7 +109,7 @@ install_dotfiles() {
     if [[ "$DOTFILES_REPO" =~ https://github.com/(.+) ]]; then
         ssh_repo="git@github.com:${BASH_REMATCH[1]}"
         print_info "Attempting SSH clone first: ${ssh_repo}"
-        if git clone --depth=1 "${ssh_repo}" "$dotfiles_dir" 2>/dev/null; then
+        if git clone --depth=1 "${ssh_repo}" "$dotfiles_dir"; then
             print_success "Cloned via SSH"
         else
             print_warning "SSH clone failed, trying HTTPS..."
