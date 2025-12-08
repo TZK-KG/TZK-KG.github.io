@@ -363,7 +363,7 @@ configure_firewall() {
     print_info "Enabling UFW..."
     sudo systemctl enable ufw
     sudo systemctl start ufw
-    sudo ufw enable
+    sudo ufw --force enable
     
     print_success "Firewall configured and enabled"
 }
