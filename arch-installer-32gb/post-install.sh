@@ -326,7 +326,7 @@ install_tailscale() {
     print_header "TAILSCALE VPN INSTALLATION"
     
     print_info "Installing Tailscale..."
-    if ! sudo pacman -S --needed --noconfirm tailscale; then
+    if ! sudo pacman -S --needed --noconfirm $VPN_PACKAGES; then
         print_error "Failed to install Tailscale"
         return 1
     fi
