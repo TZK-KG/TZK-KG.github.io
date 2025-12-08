@@ -224,7 +224,7 @@ install_end4() {
     local ssh_url="git@github.com:end-4/dots-hyprland.git"
     
     print_info "Attempting SSH clone first: ${ssh_url}"
-    if git clone --depth 1 "${ssh_url}" "$dots_dir" 2>/dev/null; then
+    if git clone --depth 1 "${ssh_url}" "$dots_dir"; then
         print_success "Cloned via SSH"
     else
         print_warning "SSH clone failed, trying HTTPS..."
