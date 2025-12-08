@@ -219,8 +219,22 @@ install_end4() {
         rm -rf "$dots_dir"
     fi
     
-    # Clone end4 dots-hyprland repository
-    git clone --depth 1 https://github.com/end-4/dots-hyprland "$dots_dir"
+    # Clone end4 dots-hyprland repository with improved error handling
+    local repo_url="https://github.com/end-4/dots-hyprland"
+    local ssh_url="git@github.com:end-4/dots-hyprland.git"
+    
+    print_info "Attempting SSH clone first: ${ssh_url}"
+    if git clone --depth 1 "${ssh_url}" "$dots_dir" 2>/dev/null; then
+        print_success "Cloned via SSH"
+    else
+        print_warning "SSH clone failed, trying HTTPS..."
+        if ! git clone --depth 1 "${repo_url}" "$dots_dir"; then
+            print_error "Failed to clone end4 repository"
+            print_info "Please check your network connection and try again"
+            return 1
+        fi
+        print_success "Cloned via HTTPS"
+    fi
     
     print_info "Installing end4 dotfiles..."
     cd "$dots_dir"

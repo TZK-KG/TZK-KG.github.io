@@ -332,11 +332,141 @@ disk_setup() {
     print_header "DISK PARTITIONING"
     
     print_info "Partitioning $DISK..."
-    # (function unchanged beyond this point)
-    # ... rest of the original script unchanged except where INSTALL_HYDE was used
+    
+    # Wipe existing partition table
+    print_info "Wiping existing partition table..."
+    wipefs -af "$DISK"
+    sgdisk --zap-all "$DISK"
+    
+    # Create GPT partition table
+    print_info "Creating new GPT partition table..."
+    parted -s "$DISK" mklabel gpt
+    
+    # Create partitions optimized for large drives (500GB+)
+    print_info "Creating EFI partition (512MB)..."
+    parted -s "$DISK" mkpart "EFI" fat32 1MiB 513MiB
+    parted -s "$DISK" set 1 esp on
+    
+    print_info "Creating ROOT partition (100GB)..."
+    parted -s "$DISK" mkpart "ROOT" ext4 513MiB 100.5GiB
+    
+    print_info "Creating HOME partition (200GB)..."
+    parted -s "$DISK" mkpart "HOME" ext4 100.5GiB 300.5GiB
+    
+    print_info "Creating SWAP partition (8GB)..."
+    parted -s "$DISK" mkpart "SWAP" linux-swap 300.5GiB 308.5GiB
+    
+    print_info "Creating DATA partition (remaining space)..."
+    parted -s "$DISK" mkpart "DATA" ext4 308.5GiB 100%
+    
+    # Wait for partition table to be re-read
+    sleep 2
+    partprobe "$DISK"
+    sleep 2
+    
+    # Determine partition naming scheme
+    local part_prefix=""
+    if [[ "$DISK" =~ "nvme" ]] || [[ "$DISK" =~ "mmcblk" ]]; then
+        part_prefix="${DISK}p"
+    else
+        part_prefix="${DISK}"
+    fi
+    
+    # Format partitions
+    print_info "Formatting partitions..."
+    mkfs.fat -F32 "${part_prefix}1"
+    mkfs.ext4 -F "${part_prefix}2"
+    mkfs.ext4 -F "${part_prefix}3"
+    mkswap "${part_prefix}4"
+    mkfs.ext4 -F "${part_prefix}5"
+    
+    # Mount partitions
+    print_info "Mounting partitions..."
+    mount "${part_prefix}2" /mnt
+    
+    mkdir -p /mnt/boot
+    mount "${part_prefix}1" /mnt/boot
+    
+    mkdir -p /mnt/home
+    mount "${part_prefix}3" /mnt/home
+    
+    swapon "${part_prefix}4"
+    
+    mkdir -p /mnt/data
+    mount "${part_prefix}5" /mnt/data
+    
+    print_success "Disk setup complete"
+    lsblk "$DISK"
+    
+    save_checkpoint "DISK_SETUP_COMPLETE"
 }
 
-# ... remaining functions unchanged until post_install_prep ...
+# =====================================================================
+# BASE SYSTEM INSTALLATION
+# =====================================================================
+base_install() {
+    print_header "BASE SYSTEM INSTALLATION"
+    
+    print_info "Installing base system packages..."
+    
+    # Load package list
+    source "${SCRIPT_DIR}/packages.conf"
+    
+    # Install base system
+    pacstrap -K /mnt $BASE_PACKAGES $SYSTEM_PACKAGES
+    
+    print_success "Base system installed"
+    
+    # Generate fstab
+    print_info "Generating fstab..."
+    genfstab -U /mnt >> /mnt/etc/fstab
+    
+    print_success "fstab generated"
+    
+    save_checkpoint "BASE_INSTALL_COMPLETE"
+}
+
+# =====================================================================
+# CHROOT CONFIGURATION
+# =====================================================================
+chroot_config() {
+    print_header "CHROOT CONFIGURATION"
+    
+    # Copy chroot script to new system
+    print_info "Copying chroot script..."
+    cp "${SCRIPT_DIR}/chroot-install.sh" /mnt/root/
+    cp "${SCRIPT_DIR}/packages.conf" /mnt/root/
+    chmod +x /mnt/root/chroot-install.sh
+    
+    # Create environment file for chroot script
+    cat > /mnt/root/chroot-env.conf <<EOF
+HOSTNAME="$HOSTNAME"
+USERNAME="$USERNAME"
+USER_PASSWORD="$USER_PASSWORD"
+ROOT_PASSWORD="$ROOT_PASSWORD"
+TIMEZONE="$TIMEZONE"
+LOCALE="$LOCALE"
+KEYMAP="$KEYMAP"
+DISK="$DISK"
+EOF
+    
+    # Execute chroot script
+    print_info "Executing chroot configuration..."
+    arch-chroot /mnt /root/chroot-install.sh
+    
+    # Cleanup
+    rm /mnt/root/chroot-install.sh
+    rm /mnt/root/chroot-env.conf
+    rm /mnt/root/packages.conf
+    
+    print_success "Chroot configuration complete"
+    
+    save_checkpoint "CHROOT_CONFIG_COMPLETE"
+}
+
+# =====================================================================
+# POST-INSTALLATION SETUP
+# =====================================================================
 
 post_install_prep() {
     print_header "POST-INSTALLATION PREPARATION"

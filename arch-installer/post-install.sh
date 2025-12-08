@@ -104,10 +104,29 @@ install_dotfiles() {
         mv "$dotfiles_dir" "${dotfiles_dir}.bak-$(date +%s)"
     fi
 
-    git clone --depth=1 "${DOTFILES_REPO}" "$dotfiles_dir" || {
-        print_error "Failed to clone ${DOTFILES_REPO}"
-        return 1
-    }
+    # Try SSH first if the repo URL can be converted to SSH
+    local ssh_repo="${DOTFILES_REPO}"
+    if [[ "$DOTFILES_REPO" =~ https://github.com/(.+) ]]; then
+        ssh_repo="git@github.com:${BASH_REMATCH[1]}"
+        print_info "Attempting SSH clone first: ${ssh_repo}"
+        if git clone --depth=1 "${ssh_repo}" "$dotfiles_dir" 2>/dev/null; then
+            print_success "Cloned via SSH"
+        else
+            print_warning "SSH clone failed, trying HTTPS..."
+            if ! git clone --depth=1 "${DOTFILES_REPO}" "$dotfiles_dir"; then
+                print_error "Failed to clone ${DOTFILES_REPO}"
+                print_info "Please check your network connection and repository access"
+                return 1
+            fi
+            print_success "Cloned via HTTPS"
+        fi
+    else
+        # Not a GitHub HTTPS URL, try as-is
+        if ! git clone --depth=1 "${DOTFILES_REPO}" "$dotfiles_dir"; then
+            print_error "Failed to clone ${DOTFILES_REPO}"
+            return 1
+        fi
+    fi
 
     cd "$dotfiles_dir"
     print_info "Running dotfiles install command: ${DOTFILES_INSTALL_CMD}"
@@ -124,9 +143,278 @@ install_dotfiles() {
 }
 
 # =====================================================================
-# MAKEPKG, AUR, Hyprland, Browsers, Docker, etc. (unchanged)
+# MAKEPKG CONFIGURATION
 # =====================================================================
-# (retain existing helper functions: configure_makepkg, install_aur_helpers, install_hyprland, ...)
+configure_makepkg() {
+    print_header "MAKEPKG CONFIGURATION"
+    
+    print_info "Configuring makepkg for parallel compilation..."
+    
+    # Backup original config
+    sudo cp /etc/makepkg.conf /etc/makepkg.conf.backup
+    
+    # Set parallel compilation
+    local nproc_count
+    nproc_count=$(nproc)
+    sudo sed -i "s/^#MAKEFLAGS=.*/MAKEFLAGS=\"-j${nproc_count}\"/" /etc/makepkg.conf
+    
+    print_success "Makepkg configured for ${nproc_count} cores"
+}
+
+# =====================================================================
+# AUR HELPER INSTALLATION
+# =====================================================================
+install_aur_helpers() {
+    print_header "AUR HELPER INSTALLATION"
+    
+    # Install yay
+    print_info "Installing yay AUR helper..."
+    
+    if command -v yay &> /dev/null; then
+        print_warning "yay is already installed"
+    else
+        # Install dependencies
+        print_info "Installing build dependencies..."
+        sudo pacman -S --needed --noconfirm base-devel git
+        
+        local build_dir="/tmp/yay-build"
+        rm -rf "$build_dir"
+        mkdir -p "$build_dir"
+        cd "$build_dir"
+        
+        git clone https://aur.archlinux.org/yay.git
+        cd yay
+        makepkg -si --noconfirm
+        
+        cd "$HOME"
+        rm -rf "$build_dir"
+        
+        print_success "yay installed"
+    fi
+    
+    # Install paru
+    print_info "Installing paru AUR helper..."
+    
+    if command -v paru &> /dev/null; then
+        print_warning "paru is already installed"
+    else
+        local build_dir="/tmp/paru-build"
+        rm -rf "$build_dir"
+        mkdir -p "$build_dir"
+        cd "$build_dir"
+        
+        git clone https://aur.archlinux.org/paru.git
+        cd paru
+        makepkg -si --noconfirm
+        
+        cd "$HOME"
+        rm -rf "$build_dir"
+        
+        print_success "paru installed"
+    fi
+}
+
+# =====================================================================
+# HYPRLAND DESKTOP ENVIRONMENT
+# =====================================================================
+install_hyprland() {
+    print_header "HYPRLAND DESKTOP ENVIRONMENT"
+    
+    print_info "Installing Hyprland and components..."
+    sudo pacman -S --needed --noconfirm $HYPRLAND_PACKAGES
+    
+    print_info "Installing Hyprland extras..."
+    sudo pacman -S --needed --noconfirm $HYPRLAND_EXTRAS
+    
+    print_info "Installing theming packages..."
+    sudo pacman -S --needed --noconfirm $THEMING_PACKAGES
+    
+    print_info "Installing audio packages..."
+    sudo pacman -S --needed --noconfirm pipewire pipewire-pulse pipewire-alsa pipewire-jack wireplumber
+    
+    print_success "Hyprland installed"
+}
+
+# =====================================================================
+# DISPLAY MANAGER
+# =====================================================================
+install_display_manager() {
+    print_header "DISPLAY MANAGER"
+    
+    print_info "Installing SDDM..."
+    sudo pacman -S --needed --noconfirm $DISPLAY_PACKAGES
+    
+    print_info "Enabling SDDM..."
+    sudo systemctl enable sddm
+    
+    print_success "SDDM installed and enabled"
+}
+
+# =====================================================================
+# BROWSER INSTALLATION
+# =====================================================================
+install_browsers() {
+    print_header "BROWSER INSTALLATION"
+    
+    print_info "Installing browsers from official repos..."
+    sudo pacman -S --needed --noconfirm $BROWSER_PACKAGES
+    
+    print_info "Installing Brave from AUR..."
+    if command -v yay &> /dev/null; then
+        yay -S --needed --noconfirm brave-bin || print_warning "Failed to install Brave browser"
+    else
+        print_warning "yay not found, skipping Brave installation"
+    fi
+    
+    print_success "Browsers installed"
+}
+
+# =====================================================================
+# PROTONVPN CLI
+# =====================================================================
+install_protonvpn() {
+    print_header "PROTONVPN CLI INSTALLATION"
+    
+    print_info "Installing ProtonVPN CLI from AUR..."
+    if command -v yay &> /dev/null; then
+        yay -S --needed --noconfirm protonvpn-cli || print_warning "Failed to install ProtonVPN CLI"
+        print_success "ProtonVPN CLI installed"
+    else
+        print_warning "yay not found, skipping ProtonVPN installation"
+    fi
+}
+
+# =====================================================================
+# DOCKER INSTALLATION
+# =====================================================================
+install_docker() {
+    print_header "DOCKER INSTALLATION"
+    
+    print_info "Installing Docker packages..."
+    sudo pacman -S --needed --noconfirm $DOCKER_PACKAGES
+    
+    print_info "Enabling Docker service..."
+    sudo systemctl enable docker
+    sudo systemctl start docker
+    
+    print_info "Adding user to docker group..."
+    sudo usermod -aG docker "$USER"
+    
+    print_success "Docker installed and configured"
+    print_warning "You need to logout and login again to use Docker without sudo"
+}
+
+# =====================================================================
+# DEVELOPMENT TOOLS
+# =====================================================================
+install_development_tools() {
+    print_header "DEVELOPMENT TOOLS"
+    
+    print_info "Installing development packages..."
+    sudo pacman -S --needed --noconfirm $DEV_PACKAGES
+    
+    print_info "Installing VS Code from AUR..."
+    if command -v yay &> /dev/null; then
+        yay -S --needed --noconfirm visual-studio-code-bin || print_warning "Failed to install VS Code"
+    fi
+    
+    print_info "Installing Postman from AUR..."
+    if command -v yay &> /dev/null; then
+        yay -S --needed --noconfirm postman-bin || print_warning "Failed to install Postman"
+    fi
+    
+    print_success "Development tools installed"
+}
+
+# =====================================================================
+# SYSTEM UTILITIES
+# =====================================================================
+install_utilities() {
+    print_header "SYSTEM UTILITIES"
+    
+    print_info "Installing system monitoring and utility tools..."
+    sudo pacman -S --needed --noconfirm $UTIL_PACKAGES
+    
+    print_success "System utilities installed"
+}
+
+# =====================================================================
+# FIREWALL CONFIGURATION
+# =====================================================================
+configure_firewall() {
+    if [[ "${ENABLE_FIREWALL:-no}" != "yes" ]]; then
+        print_info "Skipping firewall configuration (not enabled)"
+        return
+    fi
+    
+    print_header "FIREWALL CONFIGURATION"
+    
+    print_info "Installing UFW..."
+    sudo pacman -S --needed --noconfirm ufw
+    
+    print_info "Configuring UFW..."
+    sudo ufw default deny incoming
+    sudo ufw default allow outgoing
+    sudo ufw allow ssh
+    
+    print_info "Enabling UFW..."
+    sudo systemctl enable ufw
+    sudo systemctl start ufw
+    sudo ufw enable
+    
+    print_success "Firewall configured and enabled"
+}
+
+# =====================================================================
+# SSH CONFIGURATION
+# =====================================================================
+configure_ssh() {
+    print_header "SSH CONFIGURATION"
+    
+    if [[ ! -f /etc/ssh/sshd_config ]]; then
+        print_info "Installing OpenSSH..."
+        sudo pacman -S --needed --noconfirm openssh
+    fi
+    
+    print_info "Configuring SSH security..."
+    
+    # Backup original config
+    sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.backup
+    
+    # Disable root login
+    sudo sed -i 's/^#PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
+    sudo sed -i 's/^PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
+    
+    # Enable key-based authentication
+    sudo sed -i 's/^#PubkeyAuthentication.*/PubkeyAuthentication yes/' /etc/ssh/sshd_config
+    
+    print_success "SSH configured (root login disabled)"
+}
+
+# =====================================================================
+# SYSTEM OPTIMIZATION
+# =====================================================================
+configure_sysctl() {
+    print_header "SYSTEM OPTIMIZATION"
+    
+    print_info "Configuring sysctl tweaks..."
+    
+    sudo tee /etc/sysctl.d/99-custom.conf > /dev/null <<EOF
+# System optimization tweaks
+# Reduce swap usage
+vm.swappiness=10
+vm.vfs_cache_pressure=50
+# Increase inotify watches for development
+fs.inotify.max_user_watches=524288
+# Improve system responsiveness
+vm.dirty_ratio=10
+vm.dirty_background_ratio=5
+EOF
+    
+    sudo sysctl --system
+    
+    print_success "System optimization applied"
+}
 
 # =====================================================================
 # FINAL CONFIGURATION
