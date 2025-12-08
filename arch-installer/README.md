@@ -140,7 +140,46 @@ If installation fails, the checkpoint system allows resuming:
 
 ## 📦 Installed Software
 
-... (same as before) ...
+### Desktop Environment
+- **Hyprland** - Modern tiling Wayland compositor
+- **Waybar** - Highly customizable Wayland bar
+- **Kitty** - GPU-accelerated terminal emulator
+- **Rofi (Wayland)** - Application launcher and window switcher
+- **SDDM** - Simple Desktop Display Manager
+
+### Browsers
+- **Firefox** - Open-source web browser
+- **Chromium** - Open-source browser from Google
+- **Brave** (AUR) - Privacy-focused browser
+
+### Development Tools
+- **VS Code** (AUR) - Feature-rich code editor
+- **Node.js & npm** - JavaScript runtime and package manager
+- **Python & pip** - Python interpreter and package manager
+- **Postman** (AUR) - API development and testing tool
+- **Docker** - Container platform with docker-compose and docker-buildx
+
+### System Utilities
+- **btop** - Resource monitor with beautiful interface
+- **htop** - Interactive process viewer
+- **glances** - System monitoring tool
+- **fastfetch** - System information tool
+- **man-db & man-pages** - Manual pages
+- **tldr** - Simplified man pages
+- **iotop** - I/O monitor
+- **lsof** - List open files
+
+### VPN & Remote Access
+- **Tailscale** - Secure mesh VPN for remote access
+  - Zero-config VPN based on WireGuard
+  - Provides secure remote SSH access to your system
+  - Works across NAT and firewalls
+  - Easy authentication: `sudo tailscale up`
+  - Free for personal use (up to 100 devices)
+  - [Tailscale Documentation](https://tailscale.com/kb/)
+- **ProtonVPN** - Privacy-focused VPN service
+  - CLI interface for ProtonVPN
+  - Configure with `protonvpn-cli login`
 
 ### Dotfiles
 - end4 dotfiles (optional, configurable)
@@ -272,6 +311,63 @@ If anything fails, consult the log files:
 - /tmp/arch-install.log
 - /tmp/arch-post-install.log
 - /tmp/install-state.conf
+
+## 🌐 Using Tailscale VPN
+
+Tailscale provides secure remote access to your Arch system from anywhere.
+
+### Initial Setup
+
+After installation, authenticate with Tailscale:
+
+```bash
+sudo tailscale up
+```
+
+This will:
+1. Generate a unique authentication URL
+2. Open your browser to sign in (or display a URL to visit)
+3. Connect your device to your Tailscale network
+
+### Common Use Cases
+
+**Remote SSH Access:**
+```bash
+# From another Tailscale-connected device
+ssh username@100.x.y.z  # Use your Tailscale IP
+```
+
+**Check your Tailscale IP:**
+```bash
+tailscale ip -4
+```
+
+### Tailscale Commands
+
+```bash
+# Check connection status
+tailscale status
+
+# Disconnect from Tailscale
+sudo tailscale down
+
+# Reconnect to Tailscale
+sudo tailscale up
+
+# Get your Tailscale IPv4 address
+tailscale ip -4
+
+# Send a file to another device
+tailscale file cp myfile.txt devicename:
+```
+
+### Tailscale + ProtonVPN
+
+Both VPNs can coexist and serve different purposes:
+- **ProtonVPN**: Privacy VPN for general internet traffic
+- **Tailscale**: Secure mesh network for accessing your devices
+
+They work well together without conflicts.
 
 ## 🔍 Troubleshooting
 
