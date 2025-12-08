@@ -277,8 +277,11 @@ install_protonvpn() {
     
     print_info "Installing ProtonVPN CLI from AUR..."
     if command -v yay &> /dev/null; then
-        yay -S --needed --noconfirm protonvpn-cli || print_warning "Failed to install ProtonVPN CLI"
-        print_success "ProtonVPN CLI installed"
+        if yay -S --needed --noconfirm protonvpn-cli; then
+            print_success "ProtonVPN CLI installed"
+        else
+            print_warning "Failed to install ProtonVPN CLI"
+        fi
     else
         print_warning "yay not found, skipping ProtonVPN installation"
     fi
