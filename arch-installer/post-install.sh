@@ -150,8 +150,13 @@ configure_makepkg() {
     
     print_info "Configuring makepkg for parallel compilation..."
     
-    # Backup original config
-    sudo cp /etc/makepkg.conf /etc/makepkg.conf.backup
+    # Backup original config (with timestamp if backup exists)
+    if [[ -f /etc/makepkg.conf.backup ]]; then
+        print_warning "Existing backup found, creating timestamped backup"
+        sudo cp /etc/makepkg.conf "/etc/makepkg.conf.backup.$(date +%Y%m%d%H%M%S)"
+    else
+        sudo cp /etc/makepkg.conf /etc/makepkg.conf.backup
+    fi
     
     # Set parallel compilation
     local nproc_count
@@ -285,6 +290,25 @@ install_protonvpn() {
     else
         print_warning "yay not found, skipping ProtonVPN installation"
     fi
+}
+
+# =====================================================================
+# TAILSCALE VPN INSTALLATION
+# =====================================================================
+install_tailscale() {
+    print_header "TAILSCALE VPN INSTALLATION"
+    
+    print_info "Installing Tailscale..."
+    if ! sudo pacman -S --needed --noconfirm $VPN_PACKAGES; then
+        print_error "Failed to install Tailscale"
+        return 1
+    fi
+    
+    print_info "Enabling Tailscale daemon..."
+    sudo systemctl enable tailscaled
+    
+    print_success "Tailscale installed and enabled"
+    print_info "After reboot, authenticate with: sudo tailscale up"
 }
 
 # =====================================================================
@@ -432,7 +456,12 @@ final_configuration() {
     # Clean package cache
     print_info "Cleaning package cache..."
     sudo pacman -Sc --noconfirm || true
-    yay -Sc --noconfirm || true
+    if command -v yay &> /dev/null; then
+        yay -Sc --noconfirm || true
+    fi
+    if command -v paru &> /dev/null; then
+        paru -Sc --noconfirm || true
+    fi
     
     print_success "Final configuration complete"
 }
@@ -450,6 +479,7 @@ print_summary() {
     echo "  ✓ Display Manager: SDDM"
     echo "  ✓ Browsers: Firefox, Chromium, Brave"
     echo "  ✓ VPN: ProtonVPN CLI"
+    echo "  ✓ VPN: Tailscale (mesh VPN for remote access)"
     echo "  ✓ Docker: docker, docker-compose"
     echo "  ✓ Development: VS Code, Node.js, Python, Postman"
     echo "  ✓ Utilities: btop, htop, glances, fastfetch"
@@ -462,6 +492,7 @@ print_summary() {
     echo "3. Login and select Hyprland as your session"
     echo "4. Docker: logout/login to use without sudo"
     echo "5. ProtonVPN: Configure with 'protonvpn-cli login'"
+    echo "6. Tailscale: Connect with 'sudo tailscale up'"
     echo
 }
 
@@ -492,6 +523,7 @@ main() {
     install_dotfiles || true
     install_browsers || true
     install_protonvpn || true
+    install_tailscale || true
     install_docker || true
     install_development_tools || true
     install_utilities || true

@@ -169,6 +169,13 @@ You'll be prompted for:
 ### Security & Network
 - **Firewall:** UFW (optional)
 - **SSH:** OpenSSH (hardened configuration)
+- **VPN:** Tailscale - Secure mesh VPN for remote access
+  - Zero-config VPN based on WireGuard
+  - Provides secure remote SSH access
+  - Works across NAT and firewalls
+  - Easy authentication: `sudo tailscale up`
+  - Free for personal use (up to 100 devices)
+  - [Tailscale Documentation](https://tailscale.com/kb/)
 
 ### AUR Helper
 - **yay** - Yet Another Yogurt (minimal install)
@@ -204,6 +211,66 @@ end4 (from [end-4/dots-hyprland](https://github.com/end-4/dots-hyprland)) provid
 - Hyprland: `~/.config/hypr/`
 - Waybar: `~/.config/waybar/`
 - Kitty: `~/.config/kitty/`
+
+## 🌐 Using Tailscale VPN
+
+Tailscale provides secure remote access to your portable Arch system from anywhere.
+
+### Initial Setup
+
+After installation, authenticate with Tailscale:
+
+```bash
+sudo tailscale up
+```
+
+This will:
+1. Generate a unique authentication URL
+2. Open your browser to sign in (or display a URL to visit)
+3. Connect your device to your Tailscale network
+
+### Common Use Cases
+
+**Remote SSH Access:**
+```bash
+# From another Tailscale-connected device
+ssh username@100.x.y.z  # Use your Tailscale IP
+```
+
+**File Transfer:**
+```bash
+# Use scp with Tailscale IP
+scp file.txt username@100.x.y.z:~/
+```
+
+**Access from Mobile:**
+- Install Tailscale on your phone
+- SSH using apps like Termius or JuiceSSH
+- Access your portable Arch system wherever you are
+
+### Tailscale Commands
+
+```bash
+# Check connection status
+tailscale status
+
+# Disconnect
+sudo tailscale down
+
+# Reconnect
+sudo tailscale up
+
+# Get your Tailscale IP
+tailscale ip -4
+```
+
+### Security Benefits
+
+- ✓ End-to-end encrypted (WireGuard)
+- ✓ Works behind NAT/firewalls
+- ✓ No port forwarding needed
+- ✓ Zero trust network access
+- ✓ Easy device management via web dashboard
 
 ## 🔧 USB-Specific Optimizations
 
