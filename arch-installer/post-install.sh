@@ -230,10 +230,18 @@ install_browsers() {
     print_info "Installing official browsers..."
     sudo pacman -S --needed --noconfirm $BROWSER_PACKAGES
     
-    print_info "Installing Brave from AUR..."
-    yay -S --needed --noconfirm brave-bin || true
+    if command -v yay &> /dev/null; then
+        print_info "Installing Brave from AUR..."
+        if yay -S --needed --noconfirm brave-bin; then
+            print_success "Brave installed"
+        else
+            print_warning "Failed to install Brave from AUR"
+        fi
+    else
+        print_warning "yay not available, skipping Brave installation"
+    fi
     
-    print_success "Browsers installed"
+    print_success "Browser installation complete"
 }
 
 # =====================================================================
@@ -242,11 +250,17 @@ install_browsers() {
 install_protonvpn() {
     print_header "PROTONVPN INSTALLATION"
     
-    print_info "Installing ProtonVPN CLI..."
-    yay -S --needed --noconfirm protonvpn-cli || true
-    
-    print_success "ProtonVPN CLI installed"
-    print_info "Configure with 'protonvpn-cli login' after reboot"
+    if command -v yay &> /dev/null; then
+        print_info "Installing ProtonVPN CLI..."
+        if yay -S --needed --noconfirm protonvpn-cli; then
+            print_success "ProtonVPN CLI installed"
+            print_info "Configure with 'protonvpn-cli login' after reboot"
+        else
+            print_warning "Failed to install ProtonVPN CLI from AUR"
+        fi
+    else
+        print_warning "yay not available, skipping ProtonVPN installation"
+    fi
 }
 
 # =====================================================================
@@ -256,7 +270,7 @@ install_tailscale() {
     print_header "TAILSCALE VPN INSTALLATION"
     
     print_info "Installing Tailscale..."
-    sudo pacman -S --needed --noconfirm $VPN_PACKAGES
+    sudo pacman -S --needed --noconfirm "$VPN_PACKAGES"
     
     print_info "Enabling Tailscale service..."
     sudo systemctl enable tailscaled
@@ -294,10 +308,28 @@ install_development_tools() {
     print_info "Installing development packages..."
     sudo pacman -S --needed --noconfirm $DEV_PACKAGES
     
-    print_info "Installing VS Code and Postman from AUR..."
-    yay -S --needed --noconfirm visual-studio-code-bin postman-bin || true
+    if command -v yay &> /dev/null; then
+        print_info "Installing VS Code and Postman from AUR..."
+        local aur_failed=0
+        
+        if ! yay -S --needed --noconfirm visual-studio-code-bin; then
+            print_warning "Failed to install VS Code from AUR"
+            aur_failed=1
+        fi
+        
+        if ! yay -S --needed --noconfirm postman-bin; then
+            print_warning "Failed to install Postman from AUR"
+            aur_failed=1
+        fi
+        
+        if [[ $aur_failed -eq 0 ]]; then
+            print_success "All AUR development tools installed"
+        fi
+    else
+        print_warning "yay not available, skipping AUR package installation"
+    fi
     
-    print_success "Development tools installed"
+    print_success "Development tools installation complete"
 }
 
 # =====================================================================

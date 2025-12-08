@@ -312,7 +312,7 @@ install_tailscale() {
     print_header "TAILSCALE VPN INSTALLATION"
     
     print_info "Installing Tailscale..."
-    sudo pacman -S --needed --noconfirm $VPN_PACKAGES
+    sudo pacman -S --needed --noconfirm "$VPN_PACKAGES"
     
     print_info "Enabling Tailscale service..."
     sudo systemctl enable tailscaled
