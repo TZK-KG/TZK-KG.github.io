@@ -173,7 +173,7 @@ install_display_manager() {
 # ==============================================================================
 
 install_end4() {
-    if [[ "$INSTALL_END4" != "yes" ]]; then
+    if [[ "${INSTALL_END4:-no}" != "yes" ]]; then
         print_info "Skipping end4 installation (not enabled)"
         return
     fi
@@ -319,11 +319,31 @@ install_development_tools() {
 }
 
 # ==============================================================================
+# TAILSCALE VPN INSTALLATION
+# ==============================================================================
+
+install_tailscale() {
+    print_header "TAILSCALE VPN INSTALLATION"
+    
+    print_info "Installing Tailscale..."
+    if ! sudo pacman -S --needed --noconfirm tailscale; then
+        print_error "Failed to install Tailscale"
+        return 1
+    fi
+    
+    print_info "Enabling Tailscale daemon..."
+    sudo systemctl enable tailscaled
+    
+    print_success "Tailscale installed and enabled"
+    print_info "After reboot, authenticate with: sudo tailscale up"
+}
+
+# ==============================================================================
 # FIREWALL CONFIGURATION
 # ==============================================================================
 
 configure_firewall() {
-    if [[ "$ENABLE_FIREWALL" != "yes" ]]; then
+    if [[ "${ENABLE_FIREWALL:-no}" != "yes" ]]; then
         print_info "Skipping firewall configuration (not enabled)"
         return
     fi
@@ -341,7 +361,7 @@ configure_firewall() {
     print_info "Enabling UFW..."
     sudo systemctl enable ufw
     sudo systemctl start ufw
-    sudo ufw enable
+    sudo ufw --force enable
     
     print_success "Firewall configured and enabled"
 }
@@ -450,8 +470,13 @@ final_configuration() {
     
     # Clean package cache
     print_info "Cleaning package cache..."
-    sudo pacman -Sc --noconfirm
-    yay -Sc --noconfirm
+    sudo pacman -Sc --noconfirm || true
+    if command -v yay &> /dev/null; then
+        yay -Sc --noconfirm || true
+    fi
+    if command -v paru &> /dev/null; then
+        paru -Sc --noconfirm || true
+    fi
     
     print_success "Final configuration complete"
 }
@@ -466,12 +491,13 @@ print_summary() {
     echo "Installed Components:"
     echo "  ✓ AUR Helper: yay"
     echo "  ✓ Desktop Environment: Hyprland (lightweight config)"
-    [[ "$INSTALL_END4" == "yes" ]] && echo "  ✓ end4 Dotfiles: Installed"
+    [[ "${INSTALL_END4:-no}" == "yes" ]] && echo "  ✓ end4 Dotfiles: Installed"
     echo "  ✓ Display Manager: SDDM"
     echo "  ✓ Browser: Firefox (single browser)"
+    echo "  ✓ VPN: Tailscale (mesh VPN for remote access)"
     echo "  ✓ Development: Python only"
     echo "  ✓ Utilities: htop, fastfetch (minimal)"
-    [[ "$ENABLE_FIREWALL" == "yes" ]] && echo "  ✓ Firewall: UFW (enabled)"
+    [[ "${ENABLE_FIREWALL:-no}" == "yes" ]] && echo "  ✓ Firewall: UFW (enabled)"
     echo "  ✓ zram: Configured (swap in RAM)"
     echo "  ✓ USB Optimizations: Applied"
     echo
@@ -499,7 +525,8 @@ print_summary() {
     echo "1. Reboot the system: sudo reboot"
     echo "2. SDDM will start automatically"
     echo "3. Login and select Hyprland as your session"
-    echo "4. Enjoy your lightweight Arch Linux with end4!"
+    echo "4. Tailscale: Connect with 'sudo tailscale up'"
+    echo "5. Enjoy your lightweight Arch Linux with end4!"
     echo
     
     print_info "end4 Dotfiles Info:"
@@ -540,6 +567,7 @@ main() {
     install_end4
     install_browsers
     install_development_tools
+    install_tailscale
     install_utilities
     configure_firewall
     configure_ssh
