@@ -260,7 +260,6 @@ install_tailscale() {
     
     print_info "Enabling Tailscale service..."
     sudo systemctl enable tailscaled
-    sudo systemctl start tailscaled
     
     print_success "Tailscale installed and enabled"
     print_info "Run 'sudo tailscale up' after reboot to authenticate"

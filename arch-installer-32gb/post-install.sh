@@ -173,7 +173,7 @@ install_display_manager() {
 # ==============================================================================
 
 install_end4() {
-    if [[ "$INSTALL_END4" != "yes" ]]; then
+    if [[ "${INSTALL_END4:-no}" != "yes" ]]; then
         print_info "Skipping end4 installation (not enabled)"
         return
     fi
@@ -316,7 +316,6 @@ install_tailscale() {
     
     print_info "Enabling Tailscale service..."
     sudo systemctl enable tailscaled
-    sudo systemctl start tailscaled
     
     print_success "Tailscale installed and enabled"
     print_info "Run 'sudo tailscale up' after reboot to authenticate"
@@ -327,7 +326,7 @@ install_tailscale() {
 # ==============================================================================
 
 configure_firewall() {
-    if [[ "$ENABLE_FIREWALL" != "yes" ]]; then
+    if [[ "${ENABLE_FIREWALL:-no}" != "yes" ]]; then
         print_info "Skipping firewall configuration (not enabled)"
         return
     fi
@@ -470,13 +469,13 @@ print_summary() {
     echo "Installed Components:"
     echo "  ✓ AUR Helper: yay"
     echo "  ✓ Desktop Environment: Hyprland (lightweight config)"
-    [[ "$INSTALL_END4" == "yes" ]] && echo "  ✓ end4 Dotfiles: Installed"
+    [[ "${INSTALL_END4:-no}" == "yes" ]] && echo "  ✓ end4 Dotfiles: Installed"
     echo "  ✓ Display Manager: SDDM"
     echo "  ✓ Browser: Firefox (single browser)"
     echo "  ✓ VPN: Tailscale (mesh VPN for remote access)"
     echo "  ✓ Development: Python only"
     echo "  ✓ Utilities: htop, fastfetch (minimal)"
-    [[ "$ENABLE_FIREWALL" == "yes" ]] && echo "  ✓ Firewall: UFW (enabled)"
+    [[ "${ENABLE_FIREWALL:-no}" == "yes" ]] && echo "  ✓ Firewall: UFW (enabled)"
     echo "  ✓ zram: Configured (swap in RAM)"
     echo "  ✓ USB Optimizations: Applied"
     echo
