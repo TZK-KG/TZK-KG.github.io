@@ -230,7 +230,7 @@ install_hyprland() {
     sudo pacman -S --needed --noconfirm $THEMING_PACKAGES
     
     print_info "Installing audio packages..."
-    sudo pacman -S --needed --noconfirm pipewire pipewire-pulse pipewire-alsa pipewire-jack wireplumber
+    sudo pacman -S --needed --noconfirm $AUDIO_PACKAGES
     
     print_success "Hyprland installed"
 }
