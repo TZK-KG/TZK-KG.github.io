@@ -297,7 +297,6 @@ install_docker() {
     
     print_info "Enabling Docker service..."
     sudo systemctl enable docker
-    sudo systemctl start docker
     
     print_info "Adding user to docker group..."
     sudo usermod -aG docker "$USER"
