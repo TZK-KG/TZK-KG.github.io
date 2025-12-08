@@ -193,8 +193,8 @@ install_end4() {
     sudo pacman -S --needed --noconfirm \
         gtk3 \
         gtk-layer-shell \
-        gnome-bluetooth-3.0 \
-        libdbusmenu-gtk3 \
+        gnome-bluetooth \
+        libdbusmenu-glib \
         upower \
         gvfs \
         brightnessctl \

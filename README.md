@@ -113,6 +113,21 @@ Features:
 
 These scripts are provided as-is for educational and personal use.
 
+## ⚠️ Important Requirements
+
+### UEFI Boot Mode Required
+Both installers **require UEFI boot mode** and will not work with legacy BIOS. To check if your system is booted in UEFI mode:
+```bash
+ls /sys/firmware/efi/efivars
+```
+If this directory exists, you're in UEFI mode. If not, reboot and enable UEFI in your BIOS settings.
+
+### Minimum Requirements
+- **Full Version:** 256GB+ USB 3.0+ drive, UEFI boot
+- **Lightweight Version:** 32GB+ USB 3.0+ drive, UEFI boot
+- Active internet connection during installation
+- x86_64 processor with virtualization support recommended
+
 ## ⚠️ Warning
 
 These scripts will **destroy all data** on the selected disk. Always backup important data before proceeding.
